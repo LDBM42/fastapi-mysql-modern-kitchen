@@ -1,0 +1,1 @@
+{"id":"de4518d7-bc45-40a9-a4d9-c64723764478","space":28825,"runtime":"python3.9","name":"fastapi-mysql-modern_kitchen","path":"0bnf4a","project":"b0qoq3hx","account":"144798365827","region":"us-east-1","deps":["fastapi","cryptography","sqlalchemy"],"envs":null,"public":true,"log_level":"off","cron":""}
