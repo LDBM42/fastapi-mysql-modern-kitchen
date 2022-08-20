@@ -223,10 +223,24 @@ def create_recipe(recipe: Recipe):
     step_table = steps.metadata.tables['steps']
     user_table = users.metadata.tables['users']
 
-    user = (
-        session.query(users)
-        .filter(users.nickname == recipe.user.nickname).first()
-    )
+
+    Session = sessionmaker()
+    Session.configure(bind=engine)
+    session = Session()
+    try:
+        user = (
+            session.query(users)
+            .filter(users.nickname == recipe.user.nickname).first()
+        )
+    except:
+        # if any kind of exception occurs, rollback transaction
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+
+
 
     # here we create a dict to store the data in this format
     new_recipe = {'name': recipe.name, 
@@ -262,10 +276,22 @@ def update_recipe(recipe: Recipe):
     step_table = steps.metadata.tables['steps']
     user_table = users.metadata.tables['users']
 
-    user = (
+    Session = sessionmaker()
+    Session.configure(bind=engine)
+    session = Session()
+    try:
+        user = (
         session.query(users)
         .filter(users.nickname == recipe.user.nickname).first()
     )
+    except:
+        # if any kind of exception occurs, rollback transaction
+        session.rollback()
+        raise
+    finally:
+        session.close()
+
+    
 
     # here we create a dict to store the data in this format
     updated_recipe = {'name': recipe.name, 
@@ -313,7 +339,18 @@ def get_user(nickname: str):
 
 @app.get('/users')
 def get_users():
-    return session.query(users.id, users.nickname).all()
+    Session = sessionmaker()
+    Session.configure(bind=engine)
+    session = Session()
+
+    try:
+        return session.query(users.id, users.nickname).all()
+    except:
+        # if any kind of exception occurs, rollback transaction
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 
 @app.post('/users')
@@ -329,7 +366,19 @@ def create_user(user: User):
 
     result = conn.execute(user_table.insert().values(new_user))
     #  return conn.execute(user_table.select().where(user_table.c.id == result.lastrowid)).first()
-    return session.query(users).filter(users.id == result.lastrowid).first()
+    
+    
+    Session = sessionmaker()
+    Session.configure(bind=engine)
+    session = Session()
+    try:
+        return session.query(users).filter(users.id == result.lastrowid).first()
+    except:
+        # if any kind of exception occurs, rollback transaction
+        session.rollback()
+        raise
+    finally:
+        session.close()
 
 # put is to update
 @app.put('/users', response_model=bool, tags=['users'])
